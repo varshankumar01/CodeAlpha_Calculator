@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#080d18">
+  <meta name="description" content="A polished, responsive calculator for quick everyday math.">
+  <title>Smart Calculator</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    :root {
+      color-scheme: dark;
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      font-synthesis: none;
+      text-rendering: optimizeLegibility;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      min-width: 320px;
+      min-height: 100svh;
+      margin: 0;
+      background:
+        radial-gradient(ellipse at 14% 18%, rgb(39 91 140 / 20%), transparent 38%),
+        radial-gradient(ellipse at 88% 82%, rgb(92 61 156 / 17%), transparent 38%),
+        #080d18;
+    }
+
+    .calculator-card {
+      animation: enter 650ms cubic-bezier(.2, .8, .2, 1) both;
+      background: linear-gradient(145deg, rgb(24 34 52 / 88%), rgb(13 20 34 / 94%));
+      box-shadow: 0 32px 90px rgb(0 0 0 / 46%), inset 0 1px 0 rgb(255 255 255 / 8%);
+      backdrop-filter: blur(24px);
+    }
+
+    .display-value {
+      font-variant-numeric: tabular-nums;
+      transition: opacity 140ms ease, transform 140ms ease;
+    }
+
+    .display-value.updated {
+      animation: display-update 180ms ease-out;
+    }
+
+    .calc-key {
+      min-height: 62px;
+      touch-action: manipulation;
+      transition: transform 130ms ease, background-color 160ms ease, box-shadow 160ms ease, border-color 160ms ease;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    .calc-key:hover {
+      transform: translateY(-2px);
+    }
+
+    .calc-key:active {
+      transform: scale(.95);
+    }
+
+    .calc-key:focus-visible {
+      outline: 2px solid #8bd8ff;
+      outline-offset: 3px;
+      z-index: 1;
+    }
+
+    @keyframes enter {
+      from {
+        opacity: 0;
+        transform: translateY(18px) scale(.985);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+      }
+    }
+
+    @keyframes display-update {
+      50% {
+        opacity: .65;
+        transform: translateY(-2px);
+      }
+      100% {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    @media (max-width: 420px) {
+      .calc-key {
+        min-height: 58px;
+      }
+
+      .calculator-card {
+        padding: 1.1rem;
+      }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      *,
+      *::before,
+      *::after {
+        animation-duration: .01ms !important;
+        animation-iteration-count: 1 !important;
+        scroll-behavior: auto !important;
+        transition-duration: .01ms !important;
+      }
+    }
+  </style>
+</head>
+<body class="flex min-h-screen items-center justify-center px-4 py-8 text-slate-100">
+  <main class="w-full max-w-[420px]">
+    <section class="calculator-card rounded-[30px] border border-white/[0.09] p-6 sm:p-7" aria-label="Smart Calculator">
+      <header class="mb-7 flex items-center gap-3">
+        <div class="flex h-11 w-11 items-center justify-center rounded-2xl border border-sky-300/20 bg-sky-400/10 text-sky-200 shadow-[0_0_24px_rgba(56,189,248,0.12)]" aria-hidden="true">
+          <svg viewBox="0 0 24 24" class="h-6 w-6" fill="none" stroke="currentColor" stroke-width="1.7">
+            <rect x="5" y="3" width="14" height="18" rx="3"></rect>
+            <path d="M8.5 7h7M8.5 11h.01M12 11h.01M15.5 11h.01M8.5 15h.01M12 15h.01M15.5 15h.01M8.5 18h7"></path>
+          </svg>
+        </div>
+        <div>
+          <h1 class="text-base font-semibold tracking-wide text-white">Smart Calculator</h1>
+          <p class="mt-0.5 text-xs tracking-wide text-slate-400">
+            Fast <span class="px-1 text-sky-300">&bull;</span>
+            Simple <span class="px-1 text-sky-300">&bull;</span>
+            Powerful
+          </p>
+        </div>
+        <span class="ml-auto hidden rounded-full border border-white/[0.08] bg-white/[0.03] px-2.5 py-1 text-[10px] font-medium uppercase tracking-[0.13em] text-slate-400 sm:inline">Ready</span>
+      </header>
+
+      <div class="mb-5 flex min-h-[142px] flex-col items-end justify-end overflow-hidden rounded-2xl border border-white/[0.06] bg-[#090f1b]/75 px-5 py-4 text-right shadow-inner shadow-black/20" aria-live="polite" aria-atomic="true">
+        <p id="expression" class="mb-2 min-h-5 w-full overflow-hidden text-ellipsis whitespace-nowrap text-sm tracking-wide text-slate-400" aria-label="Expression"></p>
+        <p id="display" class="display-value w-full overflow-hidden text-ellipsis whitespace-nowrap text-[clamp(2.4rem,12vw,3.4rem)] font-light leading-tight tracking-[-0.055em] text-white" aria-label="Current value">0</p>
+        <p id="preview" class="mt-2 min-h-4 w-full overflow-hidden text-ellipsis whitespace-nowrap text-xs text-sky-300/80" aria-label="Live result"></p>
+      </div>
+
+      <div class="grid grid-cols-4 gap-3" role="group" aria-label="Calculator keys">
+        <button class="calc-key rounded-2xl border border-rose-300/10 bg-rose-400/[0.10] text-base font-semibold text-rose-200 hover:bg-rose-400/[0.17]" data-action="clear" aria-label="Clear all">AC</button>
+        <button class="calc-key rounded-2xl border border-amber-200/10 bg-amber-300/[0.08] text-base font-semibold text-amber-100 hover:bg-amber-300/[0.15]" data-action="delete" aria-label="Delete last character">DEL</button>
+        <button class="calc-key rounded-2xl border border-white/[0.07] bg-white/[0.055] text-lg font-medium text-slate-300 hover:bg-white/[0.1]" data-action="percent" aria-label="Percent">%</button>
+        <button class="calc-key rounded-2xl border border-sky-300/10 bg-sky-300/[0.10] text-xl font-medium text-sky-200 hover:bg-sky-300/[0.17]" data-operator="/" aria-label="Divide">&divide;</button>
+
+        <button class="calc-key rounded-2xl border border-white/[0.07] bg-white/[0.045] text-xl font-medium text-slate-100 hover:bg-white/[0.09]" data-number="7">7</button>
+        <button class="calc-key rounded-2xl border border-white/[0.07] bg-white/[0.045] text-xl font-medium text-slate-100 hover:bg-white/[0.09]" data-number="8">8</button>
+        <button class="calc-key rounded-2xl border border-white/[0.07] bg-white/[0.045] text-xl font-medium text-slate-100 hover:bg-white/[0.09]" data-number="9">9</button>
+        <button class="calc-key rounded-2xl border border-sky-300/10 bg-sky-300/[0.10] text-xl font-medium text-sky-200 hover:bg-sky-300/[0.17]" data-operator="*" aria-label="Multiply">&times;</button>
+
+        <button class="calc-key rounded-2xl border border-white/[0.07] bg-white/[0.045] text-xl font-medium text-slate-100 hover:bg-white/[0.09]" data-number="4">4</button>
+        <button class="calc-key rounded-2xl border border-white/[0.07] bg-white/[0.045] text-xl font-medium text-slate-100 hover:bg-white/[0.09]" data-number="5">5</button>
+        <button class="calc-key rounded-2xl border border-white/[0.07] bg-white/[0.045] text-xl font-medium text-slate-100 hover:bg-white/[0.09]" data-number="6">6</button>
+        <button class="calc-key rounded-2xl border border-sky-300/10 bg-sky-300/[0.10] text-xl font-medium text-sky-200 hover:bg-sky-300/[0.17]" data-operator="-" aria-label="Subtract">&minus;</button>
+
+        <button class="calc-key rounded-2xl border border-white/[0.07] bg-white/[0.045] text-xl font-medium text-slate-100 hover:bg-white/[0.09]" data-number="1">1</button>
+        <button class="calc-key rounded-2xl border border-white/[0.07] bg-white/[0.045] text-xl font-medium text-slate-100 hover:bg-white/[0.09]" data-number="2">2</button>
+        <button class="calc-key rounded-2xl border border-white/[0.07] bg-white/[0.045] text-xl font-medium text-slate-100 hover:bg-white/[0.09]" data-number="3">3</button>
+        <button class="calc-key rounded-2xl border border-sky-300/10 bg-sky-300/[0.10] text-xl font-medium text-sky-200 hover:bg-sky-300/[0.17]" data-operator="+" aria-label="Add">+</button>
+
+        <button class="calc-key col-span-2 rounded-2xl border border-white/[0.07] bg-white/[0.045] text-xl font-medium text-slate-100 hover:bg-white/[0.09]" data-number="0">0</button>
+        <button class="calc-key rounded-2xl border border-white/[0.07] bg-white/[0.045] text-xl font-medium text-slate-100 hover:bg-white/[0.09]" data-action="decimal" aria-label="Decimal point">.</button>
+        <button class="calc-key rounded-2xl border border-sky-300/25 bg-gradient-to-br from-sky-300 to-blue-500 text-xl font-semibold text-slate-950 shadow-[0_8px_24px_rgba(56,189,248,0.22)] hover:shadow-[0_10px_30px_rgba(56,189,248,0.34)]" data-action="equals" aria-label="Equals">=</button>
+      </div>
+
+      <p class="mt-5 text-center text-[11px] tracking-wide text-slate-500">Tip: use your keyboard for faster calculations</p>
+    </section>
+  </main>
+
+  <script src="script.js"></script>
+</body>
+</html>
